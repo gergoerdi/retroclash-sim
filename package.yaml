@@ -1,0 +1,49 @@
+name: retroclash-sim
+version: 0.0.0
+category: hardware
+
+dependencies:
+  - base
+  - clash-prelude
+  - clash-lib
+  - clash-ghc
+  - ghc-typelits-natnormalise
+  - ghc-typelits-extra
+  - ghc-typelits-knownnat
+
+  - retroclash-lib
+
+  - sdl2
+  - mtl
+  - transformers
+  - array
+  - text
+  - lens
+
+source-dirs:
+  - src
+
+ghc-options:
+  -fexpose-all-unfoldings -fno-worker-wrapper
+  -fplugin GHC.TypeLits.KnownNat.Solver
+  -fplugin GHC.TypeLits.Normalise
+  -fplugin GHC.TypeLits.Extra.Solver
+
+default-extensions:
+  - NoImplicitPrelude
+  - FlexibleContexts
+  - ScopedTypeVariables
+  - DataKinds
+  - NoStarIsType
+  - KindSignatures
+  - TypeOperators
+  - TypeApplications
+  - TypeFamilies
+  - DeriveGeneric
+  - DeriveAnyClass
+
+library:
+  exposed-modules:
+    - RetroClash.Sim.SDL
+    - RetroClash.Sim.VGA
+    - RetroClash.Sim.VGASDL

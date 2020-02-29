@@ -1,6 +1,7 @@
 {-# LANGUAGE RecordWildCards, ScopedTypeVariables, TypeApplications #-}
 module RetroClash.Sim.SDL
-    ( withMainWindow
+    ( VideoParams(..)
+    , withMainWindow
     , Rasterizer
 
     , BufferArray(..)
@@ -27,14 +28,10 @@ import Data.Array.IO
 import Data.IORef
 
 type Color = (Word8, Word8, Word8)
-type Draw w h = Index w -> Index h -> Color
-
-screenRefreshRate :: Word32
-screenRefreshRate = 60
 
 newtype Rasterizer (w :: Nat) (h :: Nat) = Rasterizer{ runRasterizer :: Ptr Word8 -> Int -> IO () }
 
-rasterizePattern :: (KnownNat w, KnownNat h) => Draw w h -> Rasterizer w h
+rasterizePattern :: (KnownNat w, KnownNat h) => (Index w -> Index h -> Color) -> Rasterizer w h
 rasterizePattern draw = Rasterizer $ \ptr stride -> do
     forM_ [minBound..maxBound] $ \y -> do
         let base = fromIntegral y * stride
@@ -71,15 +68,20 @@ rasterizeBuffer (BufferArray arr) = Rasterizer $ \ptr stride -> do
     width = snatToNum (SNat @w)
     height = snatToNum (SNat @h)
 
+data VideoParams = MkVideoParams
+    { windowTitle :: Text
+    , screenScale :: CInt
+    , screenRefreshRate :: Word32
+    }
+
 withMainWindow
     :: forall w h m. (KnownNat w, KnownNat h, MonadIO m)
-    => Text
-    -> CInt
+    => VideoParams
     -> ([Event] -> (Scancode -> Bool) -> m (Maybe (Rasterizer w h)))
     -> m ()
-withMainWindow title screenScale runFrame = do
+withMainWindow MkVideoParams{..} runFrame = do
     initializeAll
-    window <- createWindow title defaultWindow
+    window <- createWindow windowTitle defaultWindow
     windowSize window $= fmap (screenScale *) screenSize
 
     renderer <- createRenderer window (-1) defaultRenderer

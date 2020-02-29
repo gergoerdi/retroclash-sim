@@ -38,10 +38,9 @@ rasterizePattern draw = Rasterizer $ \ptr stride -> do
         forM_ [minBound .. maxBound] $ \x -> do
             let offset = base + (fromIntegral x * 4)
             let (r, g, b) = draw x y
-            pokeElemOff ptr (offset + 0) maxBound
-            pokeElemOff ptr (offset + 1) b
-            pokeElemOff ptr (offset + 2) g
-            pokeElemOff ptr (offset + 3) r
+            pokeElemOff ptr (offset + 0) b
+            pokeElemOff ptr (offset + 1) g
+            pokeElemOff ptr (offset + 2) r
 
 newtype BufferArray (w :: Nat) (h :: Nat) = BufferArray{ getArray :: IOUArray (Int, Int, Int) Word8 }
 
@@ -60,10 +59,9 @@ rasterizeBuffer (BufferArray arr) = Rasterizer $ \ptr stride -> do
         let base = y * stride
         forM_ [0..width-1] $ \x -> do
             let offset = base + (x * 4)
-            pokeElemOff ptr (offset + 0) maxBound
-            pokeElemOff ptr (offset + 1) =<< readArray arr (x, y, 2)
-            pokeElemOff ptr (offset + 2) =<< readArray arr (x, y, 1)
-            pokeElemOff ptr (offset + 3) =<< readArray arr (x, y, 0)
+            pokeElemOff ptr (offset + 0) =<< readArray arr (x, y, 2)
+            pokeElemOff ptr (offset + 1) =<< readArray arr (x, y, 1)
+            pokeElemOff ptr (offset + 2) =<< readArray arr (x, y, 0)
   where
     width = snatToNum (SNat @w)
     height = snatToNum (SNat @h)
@@ -85,7 +83,7 @@ withMainWindow MkVideoParams{..} runFrame = do
     windowSize window $= fmap (screenScale *) screenSize
 
     renderer <- createRenderer window (-1) defaultRenderer
-    texture <- createTexture renderer RGBA8888 TextureAccessStreaming screenSize
+    texture <- createTexture renderer RGB888 TextureAccessStreaming screenSize
     return (window, renderer, texture)
 
     let render rasterizer = do

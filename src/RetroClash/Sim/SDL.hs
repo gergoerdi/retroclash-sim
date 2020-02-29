@@ -27,7 +27,7 @@ import Data.Array.IO
 import Data.IORef
 
 type Color = (Word8, Word8, Word8)
-type Draw w h = (Index w, Index h) -> Color
+type Draw w h = Index w -> Index h -> Color
 
 screenRefreshRate :: Word32
 screenRefreshRate = 60
@@ -40,7 +40,7 @@ rasterizePattern draw = Rasterizer $ \ptr stride -> do
         let base = fromIntegral y * stride
         forM_ [minBound .. maxBound] $ \x -> do
             let offset = base + (fromIntegral x * 4)
-            let (r, g, b) = draw (x, y)
+            let (r, g, b) = draw x y
             pokeElemOff ptr (offset + 0) maxBound
             pokeElemOff ptr (offset + 1) b
             pokeElemOff ptr (offset + 2) g

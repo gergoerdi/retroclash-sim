@@ -19,7 +19,6 @@ dependencies:
   - array
   - text
   - lens
-  - monad-loops
 
 source-dirs:
   - src

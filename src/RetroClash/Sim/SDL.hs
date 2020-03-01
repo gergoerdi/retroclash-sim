@@ -27,9 +27,9 @@ import Control.Concurrent (threadDelay)
 import Data.Text (Text)
 import Control.Monad
 import Control.Monad.IO.Class
+import Control.Monad.Trans.Maybe
 import Data.Array.IO
 import Data.IORef
-import Control.Monad.Loops (whileJust_)
 
 newtype Rasterizer (w :: Nat) (h :: Nat) = Rasterizer{ runRasterizer :: Ptr () -> Int -> IO () }
 
@@ -42,7 +42,7 @@ data VideoParams = MkVideoParams
 withMainWindow
     :: forall w h m. (KnownNat w, KnownNat h, MonadIO m)
     => VideoParams
-    -> ([Event] -> (Scancode -> Bool) -> m (Maybe (Rasterizer w h)))
+    -> ([Event] -> (Scancode -> Bool) -> MaybeT m (Rasterizer w h))
     -> m ()
 withMainWindow MkVideoParams{..} runFrame = do
     initializeAll
@@ -53,20 +53,18 @@ withMainWindow MkVideoParams{..} runFrame = do
     let render rasterizer = withTexture $ \ptr rowstride ->
             liftIO $ runRasterizer rasterizer ptr rowstride
 
-    let prepareFrame = do
-            before <- ticks
-            events <- pollEvents
-            keys <- getKeyboardState
-            let windowClosed = any isWindowCloseEvent events
-            rasterizer <- if windowClosed then return Nothing else runFrame events keys
-            return $ (before,) <$> rasterizer
+    runMaybeT $ forever $ do
+        before <- ticks
+        events <- pollEvents
+        keys <- getKeyboardState
+        let windowClosed = any isWindowCloseEvent events
+        when windowClosed mzero
 
-        drawFrame (before, rasterizer) = do
-            render rasterizer
-            after <- ticks
-            waitFrame screenRefreshRate before after
-
-    whileJust_ prepareFrame drawFrame
+        rasterizer <- runFrame events keys
+        render rasterizer
+        after <- ticks
+        waitFrame screenRefreshRate before after
+    destroyWindow window
   where
     screenSize = V2 (snatToNum (SNat @w)) (snatToNum (SNat @h))
 

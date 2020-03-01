@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, ScopedTypeVariables, TupleSections #-}
+{-# LANGUAGE RecordWildCards, ScopedTypeVariables, TupleSections, NumericUnderscores #-}
 module RetroClash.Sim.SDL
     ( VideoParams(..)
     , withMainWindow
@@ -36,7 +36,7 @@ newtype Rasterizer (w :: Nat) (h :: Nat) = Rasterizer{ runRasterizer :: Ptr () -
 data VideoParams = MkVideoParams
     { windowTitle :: Text
     , screenScale :: CInt
-    , screenRefreshRate :: Word32
+    , screenRefreshRate :: Int
     }
 
 withMainWindow
@@ -49,16 +49,7 @@ withMainWindow MkVideoParams{..} runFrame = do
     window <- createWindow windowTitle defaultWindow
     windowSize window $= fmap (screenScale *) screenSize
 
-    renderer <- createRenderer window (-1) defaultRenderer
-    texture <- createTexture renderer RGB888 TextureAccessStreaming screenSize
-
-    let withTexture drawTo = do
-            (ptr, rowstride) <- lockTexture texture Nothing
-            drawTo ptr (fromIntegral rowstride)
-            unlockTexture texture
-            SDL.copy renderer texture Nothing Nothing
-            present renderer
-
+    withTexture <- setupTexture window
     let render rasterizer = withTexture $ \ptr rowstride ->
             liftIO $ runRasterizer rasterizer ptr rowstride
 
@@ -73,17 +64,33 @@ withMainWindow MkVideoParams{..} runFrame = do
         drawFrame (before, rasterizer) = do
             render rasterizer
             after <- ticks
-            let elapsed = after - before
-            when (elapsed < frameTime) $ liftIO $ threadDelay (fromIntegral (frameTime - elapsed) * 1000)
+            waitFrame screenRefreshRate before after
 
     whileJust_ prepareFrame drawFrame
   where
-    frameTime = 1000 `div` screenRefreshRate
     screenSize = V2 (snatToNum (SNat @w)) (snatToNum (SNat @h))
+
+    setupTexture window = do
+        renderer <- createRenderer window (-1) defaultRenderer
+        texture <- createTexture renderer RGB888 TextureAccessStreaming screenSize
+
+        return $ \drawToTexture -> do
+            (ptr, stride) <- lockTexture texture Nothing
+            drawToTexture ptr (fromIntegral stride)
+            unlockTexture texture
+            SDL.copy renderer texture Nothing Nothing
+            present renderer
 
     isWindowCloseEvent ev = case eventPayload ev of
         WindowClosedEvent{} -> True
         _ -> False
+
+waitFrame :: (MonadIO m) => Int -> Word32 -> Word32 -> m ()
+waitFrame frameRate before after = when (slack > 0) $ liftIO $ threadDelay slack
+  where
+    frameTime = 1_000_000 `div` frameRate
+    elapsed = fromIntegral $ 1000 * (after - before)
+    slack = frameTime - elapsed
 
 type Color = (Word8, Word8, Word8)
 

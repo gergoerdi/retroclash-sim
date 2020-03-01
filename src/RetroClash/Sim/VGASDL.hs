@@ -18,11 +18,8 @@ vgaSinkBuf
     :: (KnownNat w, KnownNat h, MonadIO m)
     => VGATimings ps w h
     -> BufferArray w h
-    -> (Bit, Bit, (Word8, Word8, Word8))
+    -> (Bit, Bit, Color)
     -> StateT (SinkState, SinkState) m Bool
 vgaSinkBuf vgaMode (BufferArray arr) = vgaSink vgaMode writeBuf
   where
-    writeBuf x y (r, g, b) = liftIO $ do
-        writeArray arr (x, y, 0) r
-        writeArray arr (x, y, 1) g
-        writeArray arr (x, y, 2) b
+    writeBuf x y rgb = liftIO $ writeArray arr (x, y) $ packColor rgb

@@ -9,6 +9,9 @@ module RetroClash.Sim.SDL
 
     , rasterizePattern
     , rasterizeBuffer
+
+    , Color
+    , packColor
     ) where
 
 import Prelude
@@ -29,23 +32,25 @@ import Data.IORef
 
 type Color = (Word8, Word8, Word8)
 
-newtype Rasterizer (w :: Nat) (h :: Nat) = Rasterizer{ runRasterizer :: Ptr Word8 -> Int -> IO () }
+packColor :: Color -> Word32
+packColor (r, g, b) =
+    fromIntegral r `shiftL` 16 .|.
+    fromIntegral g `shiftL` 8 .|.
+    fromIntegral b `shiftL` 0
+
+newtype Rasterizer (w :: Nat) (h :: Nat) = Rasterizer{ runRasterizer :: Ptr () -> Int -> IO () }
 
 rasterizePattern :: (KnownNat w, KnownNat h) => (Index w -> Index h -> Color) -> Rasterizer w h
 rasterizePattern draw = Rasterizer $ \ptr stride -> do
     forM_ [minBound..maxBound] $ \y -> do
-        let base = fromIntegral y * stride
+        let base = plusPtr ptr $ fromIntegral y * stride
         forM_ [minBound .. maxBound] $ \x -> do
-            let offset = base + (fromIntegral x * 4)
-            let (r, g, b) = draw x y
-            pokeElemOff ptr (offset + 0) b
-            pokeElemOff ptr (offset + 1) g
-            pokeElemOff ptr (offset + 2) r
+            pokeElemOff base (fromIntegral x) (packColor $ draw x y)
 
-newtype BufferArray (w :: Nat) (h :: Nat) = BufferArray{ getArray :: IOUArray (Int, Int, Int) Word8 }
+newtype BufferArray (w :: Nat) (h :: Nat) = BufferArray{ getArray :: IOUArray (Int, Int) Word32 }
 
 newBufferArray :: forall w h. (KnownNat w, KnownNat h) => IO (BufferArray w h)
-newBufferArray = BufferArray <$> newArray ((0, 0, 0), (width - 1, height - 1, 2)) 0
+newBufferArray = BufferArray <$> newArray ((0, 0), (width - 1, height - 1)) 0
   where
     width = snatToNum (SNat @w)
     height = snatToNum (SNat @h)
@@ -56,12 +61,9 @@ rasterizeBuffer
     -> Rasterizer w h
 rasterizeBuffer (BufferArray arr) = Rasterizer $ \ptr stride -> do
     forM_ [0..height-1] $ \y -> do
-        let base = y * stride
+        let base = plusPtr ptr $ y * stride
         forM_ [0..width-1] $ \x -> do
-            let offset = base + (x * 4)
-            pokeElemOff ptr (offset + 0) =<< readArray arr (x, y, 2)
-            pokeElemOff ptr (offset + 1) =<< readArray arr (x, y, 1)
-            pokeElemOff ptr (offset + 2) =<< readArray arr (x, y, 0)
+            pokeElemOff base x =<< readArray arr (x, y)
   where
     width = snatToNum (SNat @w)
     height = snatToNum (SNat @h)
@@ -88,8 +90,7 @@ withMainWindow MkVideoParams{..} runFrame = do
 
     let render rasterizer = do
             (ptr, stride) <- lockTexture texture Nothing
-            let ptr' = castPtr ptr
-            liftIO $ runRasterizer rasterizer ptr' (fromIntegral stride)
+            liftIO $ runRasterizer rasterizer ptr (fromIntegral stride)
             unlockTexture texture
             SDL.copy renderer texture Nothing Nothing
             present renderer

@@ -49,24 +49,21 @@ rasterizePattern draw = Rasterizer $ \ptr stride -> do
 
 newtype BufferArray (w :: Nat) (h :: Nat) = BufferArray{ getArray :: IOUArray (Int, Int) Word32 }
 
-newBufferArray :: forall w h. (KnownNat w, KnownNat h) => IO (BufferArray w h)
-newBufferArray = BufferArray <$> newArray ((0, 0), (width - 1, height - 1)) 0
-  where
-    width = snatToNum (SNat @w)
-    height = snatToNum (SNat @h)
+{-# INLINE bufferBounds #-}
+bufferBounds :: SNat w -> SNat h -> ((Int, Int), (Int, Int))
+bufferBounds w h = ((0, 0), (snatToNum w - 1, snatToNum h - 1))
 
-rasterizeBuffer
-    :: forall w h. (KnownNat w, KnownNat h)
-    => BufferArray w h
-    -> Rasterizer w h
+newBufferArray :: forall w h. (KnownNat w, KnownNat h) => IO (BufferArray w h)
+newBufferArray = BufferArray <$> newArray (bufferBounds (SNat @w) (SNat @h)) 0
+
+rasterizeBuffer :: forall w h. (KnownNat w, KnownNat h) => BufferArray w h -> Rasterizer w h
 rasterizeBuffer (BufferArray arr) = Rasterizer $ \ptr stride -> do
-    forM_ [0..height-1] $ \y -> do
+    forM_ [y0..yn] $ \y -> do
         let base = plusPtr ptr $ y * stride
-        forM_ [0..width-1] $ \x -> do
+        forM_ [x0..xn] $ \x -> do
             pokeElemOff base x =<< readArray arr (x, y)
   where
-    width = snatToNum (SNat @w)
-    height = snatToNum (SNat @h)
+    ((x0, y0), (xn, yn)) = bufferBounds (SNat @w) (SNat @h)
 
 data VideoParams = MkVideoParams
     { windowTitle :: Text

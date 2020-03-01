@@ -2,12 +2,13 @@
 module RetroClash.Sim.SDL
     ( VideoParams(..)
     , withMainWindow
+    , module SDL.Input.Keyboard.Codes
+
     , Rasterizer
+    , rasterizePattern
 
     , BufferArray(..)
     , newBufferArray
-
-    , rasterizePattern
     , rasterizeBuffer
 
     , Color
@@ -19,6 +20,7 @@ import Clash.Prelude hiding (lift)
 import RetroClash.Utils
 
 import SDL hiding (get)
+import SDL.Input.Keyboard.Codes
 import Foreign.C.Types
 import Foreign.Ptr
 import Foreign.Storable

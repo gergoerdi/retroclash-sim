@@ -55,17 +55,13 @@ withMainWindow MkVideoParams{..} runFrame = do
     let render rasterizer = withTexture $ \ptr rowstride ->
             liftIO $ runRasterizer rasterizer ptr rowstride
 
-    runMaybeT $ forever $ do
-        before <- ticks
+    runMaybeT $ forever $ atFrameRate screenRefreshRate $ do
         events <- pollEvents
         keys <- getKeyboardState
         let windowClosed = any isWindowCloseEvent events
         when windowClosed mzero
-
         rasterizer <- runFrame events keys
         render rasterizer
-        after <- ticks
-        waitFrame screenRefreshRate before after
     destroyWindow window
   where
     screenSize = V2 (snatToNum (SNat @w)) (snatToNum (SNat @h))
@@ -84,6 +80,14 @@ withMainWindow MkVideoParams{..} runFrame = do
     isWindowCloseEvent ev = case eventPayload ev of
         WindowClosedEvent{} -> True
         _ -> False
+
+atFrameRate :: (MonadIO m) => Int -> m a -> m a
+atFrameRate frameRate act = do
+    before <- ticks
+    x <- act
+    after <- ticks
+    waitFrame frameRate before after
+    return x
 
 waitFrame :: (MonadIO m) => Int -> Word32 -> Word32 -> m ()
 waitFrame frameRate before after = when (slack > 0) $ liftIO $ threadDelay slack

@@ -59,7 +59,7 @@ withMainWindow MkVideoParams{..} runFrame = do
         events <- pollEvents
         keys <- getKeyboardState
         let windowClosed = any isWindowCloseEvent events
-        when windowClosed mzero
+        guard $ not windowClosed
         rasterizer <- runFrame events keys
         render rasterizer
     destroyWindow window

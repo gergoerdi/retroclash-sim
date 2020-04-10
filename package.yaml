@@ -47,3 +47,4 @@ library:
     - RetroClash.Sim.SDL
     - RetroClash.Sim.VGA
     - RetroClash.Sim.VGASDL
+    - RetroClash.Sim.IO

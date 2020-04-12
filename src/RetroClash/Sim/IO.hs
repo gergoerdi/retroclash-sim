@@ -1,28 +1,49 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE RankNTypes #-}
 module RetroClash.Sim.IO
-    ( driveIO
-    , driveIO_
+    ( simulateIO
+    , simulateIO_
     ) where
 
-import Clash.Prelude hiding (lift)
+import Clash.Prelude
 import Control.Concurrent
 import Control.Monad.IO.Class
+import Control.Monad (void)
 
-driveIO :: (MonadIO m) => ([i] -> [o]) -> i -> IO ((o -> m (i, a)) -> m a)
-driveIO circuit input0 = do
-    inChan <- newChan
-    writeChan inChan input0
+newSink :: IO ([a], a -> IO ())
+newSink = do
+    chan <- newChan
+    list <- getChanContents chan
+    let sink = writeChan chan
+    return (list, sink)
 
-    ins <- getChanContents inChan
-    outs <- newMVar $ circuit ins
+newSource :: [a] -> IO (IO a)
+newSource xs = do
+    mvar <- newMVar xs
+    return $ modifyMVar mvar $ \(out:outs) -> return (outs, out)
 
+simulateIO
+    :: (KnownDomain dom, MonadIO m, NFDataX i, NFDataX o)
+    => (HiddenClockResetEnable dom => Signal dom i -> Signal dom o)
+    -> i
+    -> IO ((o -> m (i, a)) -> m a)
+simulateIO circuit input0 = do
+    (ins, sinkIn) <- newSink
+    sourceOut <- newSource $ simulate circuit ins
+    sinkIn input0
     return $ \world -> do
-        out <- liftIO $ modifyMVar outs $ \(out:outs) -> return (outs, out)
+        out <- liftIO sourceOut
         (input, result) <- world out
-        liftIO $ writeChan inChan input
+        liftIO $ sinkIn input
         return result
 
-driveIO_ :: (MonadIO m) => ([i] -> [o]) -> i -> IO ((o -> m i) -> m ())
-driveIO_ circuit input0 = do
-    sim <- driveIO circuit input0
-    return $ \world -> sim $ \out -> (,()) <$> world out
+simulateIO_
+    :: (KnownDomain dom, MonadIO m, NFDataX i, NFDataX o)
+    => (HiddenClockResetEnable dom => Signal dom i -> Signal dom o)
+    -> i
+    -> IO ((o -> m i) -> m ())
+simulateIO_ circuit input0 = do
+    sim <- simulateIO circuit input0
+    return $ \world -> do
+        void $ sim $ \output -> do
+            input <- world output
+            return (input, ())

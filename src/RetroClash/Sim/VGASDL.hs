@@ -15,11 +15,11 @@ import Data.Array.IO
 
 {-# INLINE vgaSinkBuf #-}
 vgaSinkBuf
-    :: (KnownNat w, KnownNat h, MonadIO m)
+    :: (KnownNat w, KnownNat h, MonadIO m, MonadState (SinkState, SinkState) m)
     => VGATimings ps w h
     -> BufferArray w h
     -> (Bit, Bit, Color)
-    -> StateT (SinkState, SinkState) m Bool
+    -> m Bool
 vgaSinkBuf vgaMode (BufferArray arr) = vgaSink vgaMode writeBuf
   where
     writeBuf x y rgb = liftIO $ writeArray arr (x, y) $ packColor rgb

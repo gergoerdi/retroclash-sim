@@ -32,6 +32,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Maybe
 import Data.Array.IO
 import Data.IORef
+import Text.Printf
 
 newtype Rasterizer (w :: Nat) (h :: Nat) = Rasterizer{ runRasterizer :: Ptr () -> Int -> IO () }
 
@@ -39,6 +40,7 @@ data VideoParams = MkVideoParams
     { windowTitle :: Text
     , screenScale :: CInt
     , screenRefreshRate :: Int
+    , reportFPS :: Bool
     }
 
 withMainWindow
@@ -55,7 +57,7 @@ withMainWindow MkVideoParams{..} runFrame = do
     let render rasterizer = withTexture $ \ptr rowstride ->
             liftIO $ runRasterizer rasterizer ptr rowstride
 
-    runMaybeT $ forever $ atFrameRate screenRefreshRate $ do
+    runMaybeT $ atFrameRate reportFPS screenRefreshRate $ do
         events <- pollEvents
         keys <- getKeyboardState
         let windowClosed = any isWindowCloseEvent events
@@ -81,13 +83,24 @@ withMainWindow MkVideoParams{..} runFrame = do
         WindowClosedEvent{} -> True
         _ -> False
 
-atFrameRate :: (MonadIO m) => Int -> m a -> m a
-atFrameRate frameRate act = do
-    before <- ticks
-    x <- act
-    after <- ticks
-    waitFrame frameRate before after
-    return x
+atFrameRate :: (MonadIO m) => Bool -> Int -> m a -> m b
+atFrameRate reportFPS frameRate act = do
+    before0 <- ticks
+    go before0 1
+  where
+    go before0 i = do
+        before <- ticks
+        act
+        after <- ticks
+        waitFrame frameRate before after
+        if i < frameRate then go before0 (i + 1) else do
+            when reportFPS $ do
+                let elapsed = after - before0
+                liftIO $ printf "%d frames at %d ms, %.2f fps\n" frameRate elapsed (fps elapsed)
+            before0 <- ticks
+            go before0 1
+
+    fps elapsed = (fromIntegral frameRate * 1000) / fromIntegral elapsed :: Double
 
 waitFrame :: (MonadIO m) => Int -> Word32 -> Word32 -> m ()
 waitFrame frameRate before after = when (slack > 0) $ liftIO $ threadDelay slack

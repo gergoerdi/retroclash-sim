@@ -125,20 +125,14 @@ rasterizePattern draw = Rasterizer $ \ptr rowstride -> do
         forM_ [minBound .. maxBound] $ \x -> do
             pokeElemOff rowPtr (fromIntegral x) (packColor $ draw x y)
 
-newtype BufferArray (w :: Nat) (h :: Nat) = BufferArray{ getArray :: IOUArray (Int, Int) Word32 }
-
-{-# INLINE bufferBounds #-}
-bufferBounds :: SNat w -> SNat h -> ((Int, Int), (Int, Int))
-bufferBounds w h = ((0, 0), (snatToNum w - 1, snatToNum h - 1))
+newtype BufferArray (w :: Nat) (h :: Nat) = BufferArray{ getArray :: IOUArray (Index w, Index h) Word32 }
 
 newBufferArray :: forall w h. (KnownNat w, KnownNat h) => IO (BufferArray w h)
-newBufferArray = BufferArray <$> newArray (bufferBounds (SNat @w) (SNat @h)) 0
+newBufferArray = BufferArray <$> newArray ((minBound, minBound), (maxBound, maxBound)) 0
 
 rasterizeBuffer :: forall w h. (KnownNat w, KnownNat h) => BufferArray w h -> Rasterizer w h
 rasterizeBuffer (BufferArray arr) = Rasterizer $ \ptr rowstride -> do
-    forM_ [y0..yn] $ \y -> do
-        let rowPtr = plusPtr ptr $ y * rowstride
-        forM_ [x0..xn] $ \x -> do
-            pokeElemOff rowPtr x =<< readArray arr (x, y)
-  where
-    ((x0, y0), (xn, yn)) = bufferBounds (SNat @w) (SNat @h)
+    forM_ [minBound..maxBound] $ \y -> do
+        let rowPtr = plusPtr ptr $ fromIntegral y * rowstride
+        forM_ [minBound..maxBound] $ \x -> do
+            pokeElemOff rowPtr (fromIntegral x) =<< readArray arr (x, y)

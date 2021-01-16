@@ -20,17 +20,17 @@ import Debug.Trace
 vgaRetrace :: VGATiming visible -> (Int, Bit)
 vgaRetrace VGATiming{..} = (snatToNum pulseWidth + snatToNum postWidth - 1, toActiveDyn polarity True)
 
-data SinkState
-    = Visible Int
+data SinkState n
+    = Visible (Index n)
     | WaitSync Bool
     | Retrace Int
     deriving (Show)
 
 {-# INLINE vgaSink #-}
 vgaSink
-    :: forall w h rgb m ps. (KnownNat w, KnownNat h, MonadState (SinkState, SinkState) m)
+    :: forall w h rgb m ps. (KnownNat w, KnownNat h, MonadState (SinkState w, SinkState h) m)
     => VGATimings ps w h
-    -> (Int -> Int -> rgb -> m ())
+    -> (Index w -> Index h -> rgb -> m ())
     -> (Bit, Bit, rgb)
     -> m Bool
 vgaSink VGATimings{..} paint (hsync0, vsync0, color) = do
@@ -55,14 +55,13 @@ vgaSink VGATimings{..} paint (hsync0, vsync0, color) = do
             s' = if n' == retrace then Visible 0 else Retrace n'
         Visible i -> ((Just i, False), s')
           where
-            i' = i + 1
-            s' = if i' == vis then WaitSync sync else Visible i'
+            s' = maybe (WaitSync sync) Visible $ succIdx i
         WaitSync prevSync -> ((Nothing, end), s')
           where
             end = not prevSync && sync
             s' = if end then Retrace 0 else WaitSync sync
 
-initSink :: (SinkState, SinkState)
+initSink :: (SinkState w, SinkState h)
 initSink = (WaitSync False, WaitSync False)
 
 {-# INLINE stateZoom #-}

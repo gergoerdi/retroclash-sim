@@ -15,7 +15,7 @@ import Data.Array.IO
 
 {-# INLINE vgaSinkBuf #-}
 vgaSinkBuf
-    :: (KnownNat w, KnownNat h, MonadIO m, MonadState (SinkState, SinkState) m)
+    :: (KnownNat w, KnownNat h, MonadIO m, MonadState (SinkState w, SinkState h) m)
     => VGATimings ps w h
     -> BufferArray w h
     -> (Bit, Bit, Color)

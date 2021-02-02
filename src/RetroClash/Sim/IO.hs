@@ -8,18 +8,7 @@ import Clash.Prelude
 import Control.Concurrent
 import Control.Monad.IO.Class
 import Control.Monad (void)
-
-newSink :: IO ([a], a -> IO ())
-newSink = do
-    chan <- newChan
-    list <- getChanContents chan
-    let sink = writeChan chan
-    return (list, sink)
-
-newSource :: [a] -> IO (IO a)
-newSource xs = do
-    mvar <- newMVar xs
-    return $ modifyMVar mvar $ \(out:outs) -> return (outs, out)
+import Control.Arrow.Transformer.Automaton
 
 simulateIO
     :: (KnownDomain dom, MonadIO m, NFDataX i, NFDataX o)
@@ -27,13 +16,12 @@ simulateIO
     -> i
     -> IO ((o -> m (i, a)) -> m a)
 simulateIO circuit input0 = do
-    (ins, sinkIn) <- newSink
-    sourceOut <- newSource $ simulate circuit ins
-    sinkIn input0
+    let Automaton step = signalAutomaton circuit
+    ref <- newMVar $ step input0
     return $ \world -> do
-        out <- liftIO sourceOut
+        (out, Automaton step) <- liftIO $ takeMVar ref
         (input, result) <- world out
-        liftIO $ sinkIn input
+        liftIO $ putMVar ref $ step input
         return result
 
 simulateIO_

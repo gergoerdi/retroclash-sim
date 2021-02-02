@@ -19,6 +19,7 @@ dependencies:
   - array
   - text
   - lens
+  - arrows
 
 source-dirs:
   - src

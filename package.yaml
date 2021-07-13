@@ -1,6 +1,12 @@
-name: retroclash-sim
-version: 0.0.0
-category: hardware
+name:                retroclash-sim
+version:             0.0.0
+category:            Hardware
+synopsis:            Simulation code shared across the code samples in the book _Retrocomputing with Clash_
+homepage:            https://github.com/gergoerdi/retroclash-sim
+license:             MIT
+author:              Gergő Érdi
+maintainer:          gergo@erdi.hu
+copyright:           2020 Gergő Érdi
 
 dependencies:
   - base

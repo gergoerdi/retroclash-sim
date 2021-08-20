@@ -5,89 +5,36 @@
 
 packages:
 - completed:
-    size: 1544480
-    subdir: clash-ghc
-    url: https://github.com/gergoerdi/clash-compiler/archive/62411778020b09433744d267acd5aa3deb85b04f.tar.gz
-    name: clash-ghc
-    version: 1.3.0
-    sha256: 7803dcb352d175fc8b9085b773f7a29a46d63f6970496bf499883736a54e9886
+    hackage: clash-prelude-1.4.3@sha256:77605835edb8f29430b2065073545d8e88750c922ae15cf0d16dfd660f4a62a4,15932
     pantry-tree:
-      size: 3666
-      sha256: fe2000ccc7cd377dcc7562da9e1345c1cb8f44754c2234d5b64ad81e6602da53
+      size: 11699
+      sha256: 6bac61e0d6556d96306910d5b82f50d2250a4106829e13ce3c6246b595e90134
   original:
-    subdir: clash-ghc
-    url: https://github.com/gergoerdi/clash-compiler/archive/62411778020b09433744d267acd5aa3deb85b04f.tar.gz
+    hackage: clash-prelude-1.4.3
 - completed:
-    size: 1544480
-    subdir: clash-prelude
-    url: https://github.com/gergoerdi/clash-compiler/archive/62411778020b09433744d267acd5aa3deb85b04f.tar.gz
-    name: clash-prelude
-    version: 1.3.0
-    sha256: 7803dcb352d175fc8b9085b773f7a29a46d63f6970496bf499883736a54e9886
+    hackage: clash-lib-1.4.3@sha256:b40f0a66594b84d15137bdd8455d40186ff72c22bc3c675286a4691eef2412e7,12829
     pantry-tree:
-      size: 13366
-      sha256: b014c73213ed1831966cee2806e21edbbeeb9d0b0a95f9a321731f38c2ce10c5
+      size: 19521
+      sha256: ce8a4f3953badc8df0ff38834336e456c87a07fa1e81a1023f114774f1a04d2f
   original:
-    subdir: clash-prelude
-    url: https://github.com/gergoerdi/clash-compiler/archive/62411778020b09433744d267acd5aa3deb85b04f.tar.gz
+    hackage: clash-lib-1.4.3
 - completed:
-    size: 1544480
-    subdir: clash-lib
-    url: https://github.com/gergoerdi/clash-compiler/archive/62411778020b09433744d267acd5aa3deb85b04f.tar.gz
-    name: clash-lib
-    version: 1.3.0
-    sha256: 7803dcb352d175fc8b9085b773f7a29a46d63f6970496bf499883736a54e9886
+    hackage: clash-ghc-1.4.3@sha256:ba2c077f91fed12172db2b240b08a5d6d99e93a0301538ebd7c8d1925fc41461,9011
     pantry-tree:
-      size: 18006
-      sha256: 19228d78effa577837d622a9605f67bbb4501e7ebbb832a91c7214d09f43dd1d
+      size: 4073
+      sha256: 2cede368b7ee60d141d28049b6125c6cf06cc322296c87af26e0284836e63525
   original:
-    subdir: clash-lib
-    url: https://github.com/gergoerdi/clash-compiler/archive/62411778020b09433744d267acd5aa3deb85b04f.tar.gz
+    hackage: clash-ghc-1.4.3
 - completed:
-    hackage: concurrent-supply-0.1.8@sha256:9373f4868ad28936a7b93781b214ef4afdeacf377ef4ac729583073491c9f9fb,1627
+    hackage: monoidal-containers-0.6.0.1@sha256:f56ea8fe91ff93da140e38b8dab4b94437b901818c13ba72fc7fc802290323ee,2583
     pantry-tree:
-      size: 400
-      sha256: bdfaa167ae3249f858ba248aea2e9b97ab9b13af6e68c73b7c3192e717e11b83
+      size: 569
+      sha256: 3a43dbbb1839521aae37a2baa3fb3ad0cc61a0a8fc4e3aec1f7dda15b92a0279
   original:
-    hackage: concurrent-supply-0.1.8
-- completed:
-    hackage: ghc-typelits-extra-0.4.1@sha256:ea3f504e032b8e4fa4d5ae1099fce7eeedb49315b20bf2ccd01f6f2ee668cf4d,4815
-    pantry-tree:
-      size: 682
-      sha256: 8e5d285c572712051eb080b4e067af9a8300be1b0c988404e9fa341c2fa68c84
-  original:
-    hackage: ghc-typelits-extra-0.4.1
-- completed:
-    hackage: barbies-2.0.2.0@sha256:fa6656b45c40f7d4ab1764d078c6878f37d37fab7f7135c061e9a5baa67943c0,4407
-    pantry-tree:
-      size: 4426
-      sha256: 5aa3ff178fe56b21250543384e8482de13f35ef57a06943178382b0f2e3eca24
-  original:
-    hackage: barbies-2.0.2.0
-- completed:
-    hackage: constraints-extras-0.3.0.2@sha256:013b8d0392582c6ca068e226718a4fe8be8e22321cc0634f6115505bf377ad26,1853
-    pantry-tree:
-      size: 594
-      sha256: 3ce1012bfb02e4d7def9df19ce80b8cd2b472c691b25b181d9960638673fecd1
-  original:
-    hackage: constraints-extras-0.3.0.2
-- completed:
-    hackage: dependent-sum-0.7.1.0@sha256:5599aa89637db434431b1dd3fa7c34bc3d565ee44f0519bfbc877be1927c2531,2068
-    pantry-tree:
-      size: 290
-      sha256: 9cbfb32b5a8a782b7a1c941803fd517633cb699159b851c1d82267a9e9391b50
-  original:
-    hackage: dependent-sum-0.7.1.0
-- completed:
-    hackage: dependent-map-0.4.0.0@sha256:ca2b131046f4340a1c35d138c5a003fe4a5be96b14efc26291ed35fd08c62221,1657
-    pantry-tree:
-      size: 551
-      sha256: 5defa30010904d2ad05a036f3eaf83793506717c93cbeb599f40db1a3632cfc5
-  original:
-    hackage: dependent-map-0.4.0.0
+    hackage: monoidal-containers-0.6.0.1
 snapshots:
 - completed:
-    size: 532413
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/21.yaml
-    sha256: 7b5cac89352fa4a88606dc6cb250aee9291f21e2e988d464065f5aa51f5de33d
-  original: lts-16.21
+    size: 585817
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/5.yaml
+    sha256: 22d24d0dacad9c1450b9a174c28d203f9bb482a2a8da9710a2f2a9f4afee2887
+  original: lts-18.5

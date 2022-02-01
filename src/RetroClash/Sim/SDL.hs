@@ -15,7 +15,6 @@ module RetroClash.Sim.SDL
     , packColor
     ) where
 
-import Prelude
 import Clash.Prelude hiding (lift)
 import RetroClash.Utils
 

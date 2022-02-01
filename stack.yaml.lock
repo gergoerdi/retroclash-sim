@@ -32,6 +32,13 @@ packages:
       sha256: 3a43dbbb1839521aae37a2baa3fb3ad0cc61a0a8fc4e3aec1f7dda15b92a0279
   original:
     hackage: monoidal-containers-0.6.0.1
+- completed:
+    hackage: retroclash-lib-0.1.0@sha256:f003947c30432d215a2ce5451e2c48b9e67df561409fae749200fddb2d9968c0,3283
+    pantry-tree:
+      size: 1212
+      sha256: 50451f7ebb81172a56171723945b03d72b4da8e9ec77456de91de628466bd636
+  original:
+    hackage: retroclash-lib-0.1.0
 snapshots:
 - completed:
     size: 585817

@@ -23,20 +23,20 @@ dependencies:
   - clash-prelude >= 1.4.2 && < 2.0
   - clash-lib  >= 1.4.2 && < 2.0
   - clash-ghc >= 1.4.2 && < 2.0
-  - ghc-typelits-natnormalise
-  - ghc-typelits-extra
-  - ghc-typelits-knownnat
+  - ghc-typelits-natnormalise <= 1.0
+  - ghc-typelits-extra <= 1.0
+  - ghc-typelits-knownnat <= 1.0
 
   - retroclash-lib ^>= 0.1
 
   - sdl2 ^>= 2.5.0.0
-  - mtl
-  - transformers
-  - array
-  - text
-  - lens
-  - arrows
-
+  - mtl < 3
+  - transformers < 0.7
+  - array < 0.6
+  - text >= 2 && < 3
+  - lens < 6
+  - arrows ^>= 0.4
+  
 source-dirs:
   - src
 

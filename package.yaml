@@ -1,5 +1,5 @@
 name:                retroclash-sim
-version:             0.1.1
+version:             0.1.2
 category:            Hardware, Graphics
 synopsis:            High-level simulators from the book "Retrocomputing with Clash"
 description: |
@@ -20,16 +20,16 @@ copyright:           2021 Gergő Érdi
 
 dependencies:
   - base >= 4.14 && < 5
-  - clash-prelude ^>= 1.4.2 || ^>= 1.6.1 || ^>= 1.8.1
-  - clash-lib  ^>= 1.4.2 || ^>= 1.6.1 || ^>= 1.8.1
-  - clash-ghc ^>= 1.4.2 || ^>= 1.6.1 || ^>= 1.8.1
+  - clash-prelude >= 1.4.2 && < 2.0
+  - clash-lib  >= 1.4.2 && < 2.0
+  - clash-ghc >= 1.4.2 && < 2.0
   - ghc-typelits-natnormalise
   - ghc-typelits-extra
   - ghc-typelits-knownnat
 
   - retroclash-lib ^>= 0.1
 
-  - sdl2
+  - sdl2 ^>= 2.5.0.0
   - mtl
   - transformers
   - array
@@ -73,7 +73,6 @@ default-extensions:
   - TemplateHaskell
   - TypeApplications
   - TypeFamilies
-  - TypeInType
   - TypeOperators
 
 library:
